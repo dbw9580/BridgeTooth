@@ -20,6 +20,7 @@ android {
 
 dependencies {
     implementation project(":Keepass2AndroidPluginSDK2")
+    implementation project(":BLE-HID-Peripheral-for-Android-lib")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'

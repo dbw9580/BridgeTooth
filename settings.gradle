@@ -1,3 +1,5 @@
 include ':app'
 include ':Keepass2AndroidPluginSDK2'
-project(':Keepass2AndroidPluginSDK2').projectDir = new File(settingsDir,"../keepass2android/src/java/Keepass2AndroidPluginSDK2/app")
+project(':Keepass2AndroidPluginSDK2').projectDir = new File(settingsDir,"./keepass2android/src/java/Keepass2AndroidPluginSDK2/app")
+include ':BLE-HID-Peripheral-for-Android-lib'
+project(':BLE-HID-Peripheral-for-Android-lib').projectDir = new File(settingsDir, "./BLE-HID-Peripheral-for-Android/lib/")

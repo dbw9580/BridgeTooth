@@ -8,8 +8,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/BLE-HID-Peripheral-for-Android/lib" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/../keepass2android/src/java/Keepass2AndroidPluginSDK2/app" />
+            <option value="$PROJECT_DIR$/keepass2android/src/java/Keepass2AndroidPluginSDK2/app" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

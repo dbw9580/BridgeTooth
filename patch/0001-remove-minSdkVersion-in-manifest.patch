@@ -1,0 +1,26 @@
+From 7c81cbc59ade5aab7e4f28b87eb70e2d619398b1 Mon Sep 17 00:00:00 2001
+From: dbw9580 <dbw9580@live.com>
+Date: Tue, 15 Jan 2019 21:20:44 +0800
+Subject: [PATCH] remove minSdkVersion in manifest
+
+---
+ .../Keepass2AndroidPluginSDK2/app/src/main/AndroidManifest.xml | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/src/java/Keepass2AndroidPluginSDK2/app/src/main/AndroidManifest.xml b/src/java/Keepass2AndroidPluginSDK2/app/src/main/AndroidManifest.xml
+index 1a0bef6..4b4add0 100644
+--- a/src/java/Keepass2AndroidPluginSDK2/app/src/main/AndroidManifest.xml
++++ b/src/java/Keepass2AndroidPluginSDK2/app/src/main/AndroidManifest.xml
+@@ -4,9 +4,6 @@
+     android:versionCode="1"
+     android:versionName="1.0" >
+ 
+-    <uses-sdk
+-        android:minSdkVersion="8"
+-        android:targetSdkVersion="19" />
+ 
+     <application
+         android:allowBackup="true"
+-- 
+2.20.1
+
