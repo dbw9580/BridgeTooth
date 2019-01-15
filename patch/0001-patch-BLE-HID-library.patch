@@ -1,0 +1,74 @@
+From 478e305915619c766529ac3fb6da26023b435b50 Mon Sep 17 00:00:00 2001
+From: dbw9580 <dbw9580@live.com>
+Date: Tue, 15 Jan 2019 21:58:15 +0800
+Subject: [PATCH] patch BLE HID library
+
+---
+ lib/build.gradle                                      | 6 +++---
+ lib/src/main/java/jp/kshoji/blehid/HidPeripheral.java | 9 +++++++++
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/lib/build.gradle b/lib/build.gradle
+index 2260331..eab8981 100644
+--- a/lib/build.gradle
++++ b/lib/build.gradle
+@@ -1,12 +1,12 @@
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion 25
+-    buildToolsVersion "25.0.2"
++    compileSdkVersion 26
++    buildToolsVersion "26.0.2"
+     
+     defaultConfig {
+         minSdkVersion 21
+-        targetSdkVersion 25
++        targetSdkVersion 26
+         versionCode 1
+         versionName "1.0"
+     }
+diff --git a/lib/src/main/java/jp/kshoji/blehid/HidPeripheral.java b/lib/src/main/java/jp/kshoji/blehid/HidPeripheral.java
+index bd8d2b6..e3e5b0f 100644
+--- a/lib/src/main/java/jp/kshoji/blehid/HidPeripheral.java
++++ b/lib/src/main/java/jp/kshoji/blehid/HidPeripheral.java
+@@ -196,6 +196,8 @@ public abstract class HidPeripheral {
+     private BluetoothGattServer gattServer;
+     private final Map<String, BluetoothDevice> bluetoothDevicesMap = new HashMap<>();
+ 
++    private volatile boolean mLastAddServiceCallbackReturned = true; // true initially when there is no "last call" 
++
+     /**
+      * Constructor<br />
+      * Before constructing the instance, check the Bluetooth availability.
+@@ -276,6 +278,8 @@ public abstract class HidPeripheral {
+      * @param service the service
+      */
+     private void addService(final BluetoothGattService service) {
++        while (!mLastAddServiceCallbackReturned);
++
+         assert gattServer != null;
+         boolean serviceAdded = false;
+         while (!serviceAdded) {
+@@ -285,6 +289,9 @@ public abstract class HidPeripheral {
+                 Log.d(TAG, "Adding Service failed", e);
+             }
+         }
++
++        mLastAddServiceCallbackReturned = false;
++
+         Log.d(TAG, "Service: " + service.getUuid() + " added.");
+     }
+ 
+@@ -751,6 +758,8 @@ public abstract class HidPeripheral {
+             if (status != 0) {
+                 Log.d(TAG, "onServiceAdded Adding Service failed..");
+             }
++
++            mLastAddServiceCallbackReturned = true;
+         }
+     };
+ 
+-- 
+2.20.1
+

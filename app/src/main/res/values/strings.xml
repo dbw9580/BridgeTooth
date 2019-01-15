@@ -12,4 +12,6 @@
     <string name="notif_foreground_notif_text">Click here to stop the service</string>
     <string name="text_main_button1">start service</string>
     <string name="text_main_button2">stop service</string>
+    <string name="text_main_button3">send string</string>
+    <string name="text_send_string_hint">String to send ...</string>
 </resources>

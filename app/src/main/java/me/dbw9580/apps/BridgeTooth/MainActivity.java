@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.common.collect.ImmutableList;
@@ -68,8 +69,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setupListView(intent);
         handleIntent(intent);
 
-        Intent startServiceIntent = new Intent(this, BluetoothKeyboardService.class);
-        startService(startServiceIntent);
 
     }
 
@@ -167,6 +166,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startBackgroundService();
         } else if (R.id.button2 == v.getId()) {
             stopBackgroundService();
+        } else if (R.id.button3 == v.getId()) {
+            Intent intent = new Intent(this, BluetoothKeyboardService.class);
+            intent.setAction(BluetoothKeyboardService.ACTION_SEND_STRING);
+            intent.putExtra(BluetoothKeyboardService.EXTRA_SEND_STRING, ((EditText) findViewById(R.id.send_string)).getText().toString());
+            startService(intent);
         }
     }
 
