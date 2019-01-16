@@ -19,6 +19,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import jp.kshoji.blehid.util.BleUtils;
 import jp.kshoji.blehid.KeyboardPeripheral;
@@ -112,12 +113,8 @@ public class BluetoothKeyboardService extends Service {
     }
 
     private void setup() {
-        if (!BleUtils.isBleSupported(this) || !BleUtils.isBlePeripheralSupported(this)) {
-            Intent showBtNotSupported = new Intent(this, MainActivity.class);
-            showBtNotSupported.setAction(MainActivity.ACTION_SERVICE_RESULT);
-            showBtNotSupported.putExtra(MainActivity.EXTRA_SERVICE_RESULT, getString(R.string.text_bluetooth_not_supported));
-            showBtNotSupported.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(showBtNotSupported);
+        if (!BleUtils.isBleSupported(this)) {
+            Toast.makeText(getApplicationContext(), R.string.toast_ble_not_supported, Toast.LENGTH_SHORT).show();
             stopSelf();
             return;
         }
@@ -127,6 +124,7 @@ public class BluetoothKeyboardService extends Service {
         this.registerReceiver(mBtStateReceiver, filter);
 
         mAdapter = ((BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
+        assert mAdapter != null;
         if (!mAdapter.isEnabled()) {
             mIsBtOn = false;
             askToEnableBt();
@@ -136,12 +134,18 @@ public class BluetoothKeyboardService extends Service {
     }
 
     private void askToEnableBt() {
+        Toast.makeText(getApplicationContext(), R.string.toast_ask_to_enable_bt, Toast.LENGTH_SHORT).show();
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getApplicationContext().startActivity(enableBtIntent);
     }
 
     private void onBtEnabled() {
+        if (!BleUtils.isBlePeripheralSupported(this)) {
+            Toast.makeText(getApplicationContext(), R.string.toast_ble_not_supported, Toast.LENGTH_SHORT).show();
+            startService(new Intent(ACTION_STOP_SERVICE, null, this, BluetoothKeyboard.class));
+            return;
+        }
         mIsBtOn = true;
         mKeyboard = new KeyboardPeripheral(this);
         mKeyboard.setDeviceName("BridgeTooth keyboard");
@@ -185,7 +189,11 @@ public class BluetoothKeyboardService extends Service {
     private void handleActionSendString(String stringToSend) {
         if (mKeyboard != null) {
             Log.d(TAG, "sending keys");
-            mKeyboard.sendKeys(stringToSend);
+            if (stringToSend != null) {
+                mKeyboard.sendKeys(stringToSend);
+            }
+        } else {
+            askToEnableBt();
         }
     }
 

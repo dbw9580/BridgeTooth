@@ -14,4 +14,6 @@
     <string name="text_main_button2">stop service</string>
     <string name="text_main_button3">send string</string>
     <string name="text_send_string_hint">String to send ...</string>
+    <string name="toast_ble_not_supported">Your device does not support Bluetooth Low Energy</string>
+    <string name="toast_ask_to_enable_bt">Please turn on Bluetooth</string>
 </resources>
