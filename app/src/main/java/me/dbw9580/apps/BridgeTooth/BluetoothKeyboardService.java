@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.Context;
@@ -17,10 +18,12 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.function.Consumer;
+
+import jp.kshoji.blehid.HidPeripheral;
 import jp.kshoji.blehid.util.BleUtils;
 import jp.kshoji.blehid.KeyboardPeripheral;
 
@@ -32,11 +35,12 @@ public class BluetoothKeyboardService extends Service {
 
     public static final String ACTION_SEND_STRING = "me.dbw9580.apps.BridgeTooth.action.SEND_STRING";
     public static final String ACTION_STOP_SERVICE = "me.dbw9580.apps.BridgeTooth.action.STOP_SERVICE";
-    private static final String ACTION_SETUP_APP = "me.dbw9580.apps.BridgeTooth.action.SETUP_APP";
+    private static final String ACTION_ENABLE_BT = "me.dbw9580.apps.BridgeTooth.action.ENABLE_BT";
 
     public static final String EXTRA_SEND_STRING = "me.dbw9580.apps.BridgeTooth.extra.SEND_STRING";
 
     private static final String FOREGROUND_SERVICE_NOTIFICATION_CHANNEL_ID = "foreground_notif_channel";
+    private static final int FOREGROUND_SERVICE_NOTIFICATION_ID = 1;
 
     private volatile Looper mServiceLooper;
     private volatile Handler mServiceHandler;
@@ -87,8 +91,7 @@ public class BluetoothKeyboardService extends Service {
         Log.d(TAG, "onStartCommand: " + intent);
         onStart(intent, startId);
 
-        createNotificationChannel();
-        startForeground(1, getForegroundServiceNotification());
+
 
         return START_NOT_STICKY;
     }
@@ -131,6 +134,9 @@ public class BluetoothKeyboardService extends Service {
         } else {
             onBtEnabled();
         }
+
+        createNotificationChannel();
+        startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, getForegroundServiceNotification(mIsBtOn, false));
     }
 
     private void askToEnableBt() {
@@ -149,12 +155,31 @@ public class BluetoothKeyboardService extends Service {
         mIsBtOn = true;
         mKeyboard = new KeyboardPeripheral(this);
         mKeyboard.setDeviceName("BridgeTooth keyboard");
+        mKeyboard.setConnectionStateCallback(new Consumer<HidPeripheral.ConnectionState>() {
+            @Override
+            public void accept(HidPeripheral.ConnectionState connectionState) {
+                Log.d(TAG, "connection state changed: " + connectionState.newState);
+                Notification newNotification = getForegroundServiceNotification(
+                        mIsBtOn,
+                        connectionState.newState == BluetoothProfile.STATE_CONNECTED
+                );
+                updateNotification(newNotification);
+
+            }
+        });
+        updateNotification(
+                getForegroundServiceNotification(mIsBtOn, false)
+        );
         mKeyboard.startAdvertising();
+
     }
 
     private void onBtDisabled() {
         mIsBtOn = false;
         mKeyboard = null;
+        updateNotification(
+                getForegroundServiceNotification(mIsBtOn, false)
+        );
     }
 
     public static void startSendString(Context context, String stringToSend) {
@@ -175,8 +200,9 @@ public class BluetoothKeyboardService extends Service {
                 Log.d(TAG, "received intent to stop");
                 stopForeground(true);
                 stopSelf();
-            } else if (ACTION_SETUP_APP.equals(action)) {
-                Log.d(TAG, "setting up HID service");
+            } else if (ACTION_ENABLE_BT.equals(action)) {
+                Log.d(TAG, "enable bt");
+                askToEnableBt();
 
             }
         }
@@ -219,6 +245,69 @@ public class BluetoothKeyboardService extends Service {
         }
     }
 
+    private void updateNotification(Notification newNotification) {
+        getSystemService(NotificationManager.class).notify(
+                FOREGROUND_SERVICE_NOTIFICATION_ID,
+                newNotification
+        );
+    }
+
+    private Notification getForegroundServiceNotification(boolean bluetoothEnabled, boolean deviceConnected) {
+        Log.d(TAG, "updated notif: bt: " + bluetoothEnabled + " connected: " + deviceConnected);
+        Notification.Builder builder = new Notification.Builder(getApplicationContext(), FOREGROUND_SERVICE_NOTIFICATION_CHANNEL_ID);
+        builder.setContentTitle(getString(R.string.notif_foreground_notif_title))
+                .setSmallIcon(R.drawable.ic_notifi)
+                .setAutoCancel(true);
+        {
+            Intent contentIntent = new Intent(getApplicationContext(), MainActivity.class);
+            contentIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, contentIntent, PendingIntent.FLAG_ONE_SHOT);
+            builder.setContentIntent(pendingIntent);
+        }
+
+        if (!bluetoothEnabled) {
+            builder.setContentText(getString(R.string.text_bt_not_enabled));
+
+            Intent intent = new Intent(this, BluetoothKeyboardService.class);
+            intent.setAction(ACTION_ENABLE_BT);
+            PendingIntent pendingIntent = PendingIntent.getService(
+                    getApplicationContext(),
+                    0,
+                    intent,
+                    PendingIntent.FLAG_ONE_SHOT
+            );
+            Notification.Action.Builder actionBuilder = new Notification.Action.Builder(
+                    R.drawable.ic_notifi,
+                    getString(R.string.text_notif_enable_bt),
+                    pendingIntent
+                    );
+            builder.addAction(actionBuilder.build());
+        } else if (!deviceConnected) {
+            builder.setContentText(getString(R.string.text_host_not_connected));
+        } else {
+            builder.setContentText(getString(R.string.text_host_connected));
+        }
+
+        {
+            Intent intent = new Intent(this, BluetoothKeyboardService.class);
+            intent.setAction(ACTION_STOP_SERVICE);
+            PendingIntent pendingIntent = PendingIntent.getService(
+                    getApplicationContext(),
+                    0,
+                    intent,
+                    PendingIntent.FLAG_ONE_SHOT
+            );
+            Notification.Action.Builder actionBuilder = new Notification.Action.Builder(
+                    R.drawable.ic_notifi,
+                    getString(R.string.text_notif_stop_service),
+                    pendingIntent
+            );
+            builder.addAction(actionBuilder.build());
+        }
+
+        return builder.build();
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.channel_name);
@@ -236,24 +325,6 @@ public class BluetoothKeyboardService extends Service {
 
     }
 
-    private Notification getForegroundServiceNotification() {
-        Intent stopServiceIntent = new Intent(this, BluetoothKeyboardService.class);
-        stopServiceIntent.setAction(ACTION_STOP_SERVICE);
-        PendingIntent stopServicePendingIntent = PendingIntent.getService(
-                getApplicationContext(),
-                0,
-                stopServiceIntent,
-                PendingIntent.FLAG_ONE_SHOT
-        );
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, FOREGROUND_SERVICE_NOTIFICATION_CHANNEL_ID);
-        builder.setContentTitle(getString(R.string.notif_foreground_notif_title))
-                .setSmallIcon(R.drawable.ic_notifi)
-                .setContentText(getString(R.string.notif_foreground_notif_text))
-                .setContentIntent(stopServicePendingIntent)
-                .setAutoCancel(true);
-        return builder.build();
-    }
 
 
 }

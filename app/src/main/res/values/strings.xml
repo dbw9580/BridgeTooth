@@ -13,7 +13,12 @@
     <string name="text_main_button1">start service</string>
     <string name="text_main_button2">stop service</string>
     <string name="text_main_button3">send string</string>
-    <string name="text_send_string_hint">String to send ...</string>
+    <string name="text_send_string_hint">String to send…</string>
     <string name="toast_ble_not_supported">Your device does not support Bluetooth Low Energy</string>
     <string name="toast_ask_to_enable_bt">Please turn on Bluetooth</string>
+    <string name="text_notif_enable_bt">enable Bluetooth</string>
+    <string name="text_host_connected">Connected to a host device</string>
+    <string name="text_host_not_connected">No host device connected</string>
+    <string name="text_notif_stop_service">Stop service</string>
+    <string name="text_bt_not_enabled">Bluetooth is not enabled.</string>
 </resources>
