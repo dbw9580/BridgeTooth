@@ -1,6 +1,6 @@
 [submodule "BLE-HID-Peripheral-for-Android-lib"]
 	path = BLE-HID-Peripheral-for-Android
-	url = https://github.com/kshoji/BLE-HID-Peripheral-for-Android/
+	url = https://github.com/dbw9580/BLE-HID-Peripheral-for-Android/
 [submodule "KP2A"]
 	path = keepass2android
 	url = https://github.com/PhilippC/keepass2android

@@ -16,9 +16,6 @@ public class ActionReceiver extends PluginActionBroadcastReceiver {
     @Override
     protected void openEntry(PluginActionBroadcastReceiver.OpenEntryAction oe) {
         try {
-            oe.addEntryAction(oe.getContext().getString(R.string.action_send_passwd),
-                    R.drawable.ic_send_bt, null);
-
             for (String field: oe.getEntryFields().keySet())
             {
                 oe.addEntryFieldAction("bridgetooth.send", Strings.PREFIX_STRING+field, oe.getContext().getString(R.string.action_send_passwd),
@@ -32,19 +29,16 @@ public class ActionReceiver extends PluginActionBroadcastReceiver {
     @Override
     protected void actionSelected(ActionSelectedAction actionSelected) {
         Log.d(TAG, "received action on field " + actionSelected.getFieldId());
-        Intent i = new Intent(actionSelected.getContext(), MainActivity.class);
-        i.setAction(MainActivity.ACTION_DISPLAY);
-        i.putExtra(Strings.EXTRA_ENTRY_OUTPUT_DATA, actionSelected.getEntryFields());
         if (!actionSelected.isEntryAction()) {
-            String rawFieldId = actionSelected.getFieldId();
-            if (rawFieldId.startsWith(Strings.PREFIX_STRING)) {
-                i.putExtra(Strings.EXTRA_FIELD_ID, rawFieldId.split("_")[1]);
-            }
+            String fieldId = actionSelected.getFieldId();
+            String toSend = actionSelected.getEntryFields().get(fieldId.substring(Strings.PREFIX_STRING.length()));
+            Intent send = new Intent(actionSelected.getContext(), BluetoothKeyboardService.class);
+            send.setAction(BluetoothKeyboardService.ACTION_SEND_STRING);
+            send.putExtra(BluetoothKeyboardService.EXTRA_SEND_STRING, toSend);
+            actionSelected.getContext().startForegroundService(send);
+        } else {
+            /* do nothing on an entry */
         }
-
-        i.putExtra(Strings.EXTRA_SENDER, actionSelected.getHostPackage());
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        actionSelected.getContext().startActivity(i);
     }
 
     @Override
