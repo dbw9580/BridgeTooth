@@ -59,7 +59,7 @@ public class BluetoothKeyboardService extends Service {
 
     private boolean mIsBtOn = false;
     private BluetoothAdapter mAdapter = null;
-    private KeyboardPeripheral mKeyboard;
+    private Keyboard mKeyboard;
 
     private BroadcastReceiver mBtStateReceiver = null;
 
@@ -104,7 +104,7 @@ public class BluetoothKeyboardService extends Service {
             this.unregisterReceiver(mBtStateReceiver);
         }
         if (mKeyboard != null) {
-            mKeyboard.stopAdvertising();
+            mKeyboard.close();
         }
 
         mServiceLooper.quit();
@@ -149,15 +149,18 @@ public class BluetoothKeyboardService extends Service {
     private void onBtEnabled() {
         if (!BleUtils.isBlePeripheralSupported(this)) {
             Toast.makeText(getApplicationContext(), R.string.toast_ble_not_supported, Toast.LENGTH_SHORT).show();
-            startService(new Intent(ACTION_STOP_SERVICE, null, this, BluetoothKeyboard.class));
+            startService(new Intent(ACTION_STOP_SERVICE, null, this, LegacyBluetoothKeyboard.class));
             return;
         }
         mIsBtOn = true;
-        mKeyboard = new KeyboardPeripheral(this);
-        mKeyboard.setDeviceName("BridgeTooth keyboard");
-        mKeyboard.setConnectionStateCallback(new Consumer<HidPeripheral.ConnectionState>() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            mKeyboard = (Keyboard) new LegacyBluetoothKeyboard(this, mAdapter);
+        } else {
+            mKeyboard = (Keyboard) new BleKeyboard(this);
+        }
+        mKeyboard.setOnConnectionStateChange(new Consumer<Keyboard.ConnectionState>() {
             @Override
-            public void accept(HidPeripheral.ConnectionState connectionState) {
+            public void accept(Keyboard.ConnectionState connectionState) {
                 Log.d(TAG, "connection state changed: " + connectionState.newState);
                 Notification newNotification = getForegroundServiceNotification(
                         mIsBtOn,
@@ -170,7 +173,7 @@ public class BluetoothKeyboardService extends Service {
         updateNotification(
                 getForegroundServiceNotification(mIsBtOn, false)
         );
-        mKeyboard.startAdvertising();
+        mKeyboard.init();
 
     }
 
