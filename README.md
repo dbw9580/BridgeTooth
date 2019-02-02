@@ -24,6 +24,18 @@ simply ignored. It is also a good idea to use only ASCII characters in your pass
 Sometimes it does not work on the first connection attempt. Please disconnect and reconnect, then
 retry sending password.
 
+## Build
+
+1. Clone the project, initialize the submodules:
+
+`git clone --recursive https://github.com/dbw9580/BridgeTooth.git`
+
+2. apply the patches in the `patch` directory:
+
+`cd keepass2android && git apply ../patch/0001-KP2A-remove-minSdkVersion-in-manifest.patch`
+
+3. Build the project in Android Studio.
+
 ## Credits and License
 
 This app is built upon the following open source projects:
