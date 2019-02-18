@@ -1,0 +1,9 @@
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="use_ble"
+        android:summary="@string/pref_description_use_ble"
+        android:title="@string/pref_use_ble" />
+
+</androidx.preference.PreferenceScreen>

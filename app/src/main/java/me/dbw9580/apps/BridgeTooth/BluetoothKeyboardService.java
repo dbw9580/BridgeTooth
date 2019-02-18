@@ -12,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -23,6 +24,8 @@ import android.widget.Toast;
 
 import java.util.function.Consumer;
 
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 import jp.kshoji.blehid.HidPeripheral;
 import jp.kshoji.blehid.util.BleUtils;
 import jp.kshoji.blehid.KeyboardPeripheral;
@@ -153,7 +156,9 @@ public class BluetoothKeyboardService extends Service {
             return;
         }
         mIsBtOn = true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean isUseBle = sharedPreferences.getBoolean("use_ble", false);
+        if (!isUseBle && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             mKeyboard = (Keyboard) new LegacyBluetoothKeyboard(this, mAdapter);
         } else {
             mKeyboard = (Keyboard) new BleKeyboard(this);

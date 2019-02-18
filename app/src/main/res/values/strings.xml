@@ -21,4 +21,11 @@
     <string name="text_host_not_connected">No host device connected</string>
     <string name="text_notif_stop_service">Stop service</string>
     <string name="text_bt_not_enabled">Bluetooth is not enabled.</string>
+
+    <!-- strings in settings -->
+    <string name="title_activity_settings">Settings</string>
+    <string name="pref_use_ble">Use BLE</string>
+    <string name="pref_description_use_ble">Use Bluetooth Low Energy instead of legacy Bluetooth.
+        Enable this if you cannot find your phone to connect.
+    </string>
 </resources>
