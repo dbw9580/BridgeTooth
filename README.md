@@ -24,6 +24,9 @@ simply ignored. It is also a good idea to use only ASCII characters in your pass
 Sometimes it does not work on the first connection attempt. Please disconnect and reconnect, then
 retry sending password.
 
+Android Pie support is experimental. If you are on Android Pie and your phone is not 
+discovered by the receiver device, please enable the "use BLE" option from the settings.
+
 ## Build
 
 1. Clone the project, initialize the submodules:
